@@ -1,42 +1,88 @@
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Plus } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import { toast } from '@/hooks/use-toast';
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
-export function AddExpenseDialog({ onSuccess }: { onSuccess: () => void }) {
-  const { user } = useAuth();
+interface AddExpenseDialogProps {
+  onSuccess?: () => void;
+}
+
+const expenseCategories = [
+  "Food & Dining",
+  "Transportation",
+  "Shopping",
+  "Entertainment",
+  "Bills & Utilities",
+  "Healthcare",
+  "Education",
+  "Travel",
+  "Home & Garden",
+  "Other"
+];
+
+export function AddExpenseDialog({ onSuccess }: AddExpenseDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    title: "",
+    amount: "",
+    category: "",
+    description: "",
+    date: new Date().toISOString().split('T')[0]
+  });
+  
+  const { user } = useAuth();
+  const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
 
     setLoading(true);
-    const formData = new FormData(e.currentTarget);
+    try {
+      const { error } = await supabase
+        .from('expenses')
+        .insert({
+          user_id: user.id,
+          name: formData.title,
+          amount: parseFloat(formData.amount),
+          category: formData.category,
+          notes: formData.description,
+          date: formData.date
+        });
 
-    const { error } = await supabase.from('expenses').insert({
-      user_id: user.id,
-      name: formData.get('name') as string,
-      amount: parseFloat(formData.get('amount') as string),
-      category: formData.get('category') as string,
-      date: formData.get('date') as string,
-      notes: formData.get('notes') as string,
-    });
+      if (error) throw error;
 
-    setLoading(false);
+      toast({
+        title: "Expense added successfully",
+        description: `${formData.title} has been added to your expense records.`,
+      });
 
-    if (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    } else {
-      toast({ title: 'Success', description: 'Expense added successfully' });
+      setFormData({
+        title: "",
+        amount: "",
+        category: "",
+        description: "",
+        date: new Date().toISOString().split('T')[0]
+      });
       setOpen(false);
-      onSuccess();
+      onSuccess?.();
+    } catch (error) {
+      console.error('Error adding expense:', error);
+      toast({
+        title: "Error adding expense",
+        description: "There was an error adding your expense. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -48,34 +94,71 @@ export function AddExpenseDialog({ onSuccess }: { onSuccess: () => void }) {
           Add Expense
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add Expense</DialogTitle>
+          <DialogTitle>Add New Expense</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="name">Name</Label>
-            <Input id="name" name="name" required />
+          <div className="space-y-2">
+            <Label htmlFor="title">Title</Label>
+            <Select value={formData.title} onValueChange={(value) => setFormData({ ...formData, title: value })}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select expense type" />
+              </SelectTrigger>
+              <SelectContent>
+                {expenseCategories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          <div>
-            <Label htmlFor="amount">Amount</Label>
-            <Input id="amount" name="amount" type="number" step="0.01" required />
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="amount">Amount</Label>
+              <Input
+                id="amount"
+                type="number"
+                step="0.01"
+                placeholder="0.00"
+                value={formData.amount}
+                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="date">Date</Label>
+              <Input
+                id="date"
+                type="date"
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                required
+              />
+            </div>
           </div>
-          <div>
-            <Label htmlFor="category">Category</Label>
-            <Input id="category" name="category" required />
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Description (Optional)</Label>
+            <Textarea
+              id="description"
+              placeholder="Add any additional notes..."
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              rows={3}
+            />
           </div>
-          <div>
-            <Label htmlFor="date">Date</Label>
-            <Input id="date" name="date" type="date" required />
+
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? "Adding..." : "Add Expense"}
+            </Button>
           </div>
-          <div>
-            <Label htmlFor="notes">Notes</Label>
-            <Input id="notes" name="notes" />
-          </div>
-          <Button type="submit" disabled={loading}>
-            {loading ? 'Adding...' : 'Add Expense'}
-          </Button>
         </form>
       </DialogContent>
     </Dialog>

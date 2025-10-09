@@ -9,14 +9,50 @@ import {
   CreditCard, BarChart3, Lock, Globe, Zap, ArrowRight, 
   Award, Target 
 } from "lucide-react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 const Welcome = () => {
-  const { signInWithGoogle, loading } = useAuth();
+  const [showAuth, setShowAuth] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const { signInWithEmail, signUpWithEmail } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleGoogleSignIn = async () => {
-    const { error } = await signInWithGoogle();
-    if (error) console.error("Sign in error:", error);
+  const handleAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      const { error } = isSignUp 
+        ? await signUpWithEmail(email, password, fullName)
+        : await signInWithEmail(email, password);
+      
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const features = [
@@ -80,12 +116,11 @@ const Welcome = () => {
       {/* Header with Theme Toggle and Sign In */}
       <div className="fixed top-6 right-6 z-50 flex items-center gap-3">
         <Button
-          onClick={handleGoogleSignIn}
-          disabled={loading}
+          onClick={() => { setShowAuth(true); setIsSignUp(false); }}
           variant="outline"
           className="border-2"
         >
-          {loading ? "Signing in..." : "Sign In"}
+          Sign In
         </Button>
         <ThemeToggle />
       </div>
@@ -128,19 +163,12 @@ const Welcome = () => {
           className="mt-12 flex flex-col sm:flex-row gap-4 items-center"
         >
           <Button
-            onClick={handleGoogleSignIn}
-            disabled={loading}
+            onClick={() => { setShowAuth(true); setIsSignUp(true); }}
             size="lg"
             className="text-lg px-12 py-7 rounded-xl shadow-strong hover:shadow-medium transition-all"
           >
-            {loading ? (
-              <div className="w-6 h-6 border-2 border-white/40 border-t-white rounded-full animate-spin"></div>
-            ) : (
-              <>
-                Start Free Today
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </>
-            )}
+            Start Free Today
+            <ArrowRight className="ml-2 w-5 h-5" />
           </Button>
 
           <Button 
@@ -277,19 +305,12 @@ const Welcome = () => {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button
-              onClick={handleGoogleSignIn}
-              disabled={loading}
+              onClick={() => { setShowAuth(true); setIsSignUp(true); }}
               size="lg"
               className="text-lg px-12 py-7 rounded-xl shadow-strong hover:shadow-medium transition-all"
             >
-              {loading ? (
-                <div className="w-6 h-6 border-2 border-white/40 border-t-white rounded-full animate-spin"></div>
-              ) : (
-                <>
-                  Get Started Free
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </>
-              )}
+              Get Started Free
+              <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
             <div className="text-sm text-muted-foreground">
               No credit card required • Free forever
@@ -303,6 +324,59 @@ const Welcome = () => {
         <a href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</a>
         <a href="/terms" className="hover:text-primary transition-colors">Terms of Service</a>
       </footer>
+
+      {/* Auth Dialog */}
+      <Dialog open={showAuth} onOpenChange={setShowAuth}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{isSignUp ? "Create Account" : "Sign In"}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleAuth} className="space-y-4">
+            {isSignUp && (
+              <div className="space-y-2">
+                <Label htmlFor="fullName">Full Name</Label>
+                <Input
+                  id="fullName"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                />
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Loading..." : isSignUp ? "Sign Up" : "Sign In"}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              className="w-full"
+              onClick={() => setIsSignUp(!isSignUp)}
+            >
+              {isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

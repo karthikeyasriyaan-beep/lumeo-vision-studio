@@ -6,7 +6,7 @@ import { Plus, TrendingUp, Wallet, Target, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCurrency } from "@/components/currency-selector";
-import AddSavingsDialog from "@/components/forms/AddSavingsDialog";
+import { AddSavingsDialog } from "@/components/forms/AddSavingsDialog";
 import EditSavingsDialog from "@/components/forms/EditSavingsDialog";
 import BackgroundBlobs from "@/components/BackgroundBlobs";
 import { Badge } from "@/components/ui/badge";
@@ -53,12 +53,7 @@ const Savings = () => {
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight gradient-text">Savings Goals</h1>
             <p className="text-muted-foreground mt-2">Track and grow your savings</p>
           </div>
-          <AddSavingsDialog onSuccess={refetch}>
-            <Button size="lg" className="gap-2 hover-glow w-full sm:w-auto">
-              <Plus className="h-5 w-5" />
-              Add Savings Goal
-            </Button>
-          </AddSavingsDialog>
+          <AddSavingsDialog onSuccess={refetch} />
         </div>
 
         {/* Summary Cards */}

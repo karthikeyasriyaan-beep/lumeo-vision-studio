@@ -3,41 +3,85 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
+import ReceiptUpload from './ReceiptUpload';
+
+const receiptCategories = [
+  "Food & Dining",
+  "Transportation",
+  "Shopping",
+  "Entertainment",
+  "Bills & Utilities",
+  "Healthcare",
+  "Business",
+  "Travel",
+  "Other"
+];
 
 export function AddReceiptDialog({ onSuccess }: { onSuccess: () => void }) {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    amount: "",
+    merchant: "",
+    category: "",
+    date: new Date().toISOString().split('T')[0],
+    notes: "",
+    image_url: ""
+  });
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
 
     setLoading(true);
-    const formData = new FormData(e.currentTarget);
+    try {
+      const { error } = await supabase.from('receipts').insert({
+        user_id: user.id,
+        name: formData.name,
+        amount: parseFloat(formData.amount),
+        merchant: formData.merchant,
+        category: formData.category,
+        date: formData.date,
+        notes: formData.notes,
+        image_url: formData.image_url
+      });
 
-    const { error } = await supabase.from('receipts').insert({
-      user_id: user.id,
-      name: formData.get('name') as string,
-      amount: parseFloat(formData.get('amount') as string),
-      merchant: formData.get('merchant') as string,
-      category: formData.get('category') as string,
-      date: formData.get('date') as string,
-      notes: formData.get('notes') as string,
-    });
+      if (error) throw error;
 
-    setLoading(false);
-
-    if (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    } else {
-      toast({ title: 'Success', description: 'Receipt added successfully' });
+      toast({
+        title: 'Receipt added successfully',
+        description: `${formData.name} has been added to your receipts.`
+      });
+      
+      setFormData({
+        name: "",
+        amount: "",
+        merchant: "",
+        category: "",
+        date: new Date().toISOString().split('T')[0],
+        notes: "",
+        image_url: ""
+      });
       setOpen(false);
       onSuccess();
+    } catch (error) {
+      console.error('Error adding receipt:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to add receipt. Please try again.',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -49,38 +93,97 @@ export function AddReceiptDialog({ onSuccess }: { onSuccess: () => void }) {
           Add Receipt
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Add Receipt</DialogTitle>
+          <DialogTitle>Add New Receipt</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="name">Name</Label>
-            <Input id="name" name="name" required />
+          <ReceiptUpload 
+            onUploadSuccess={(url) => setFormData({ ...formData, image_url: url })}
+            currentImage={formData.image_url}
+          />
+
+          <div className="space-y-2">
+            <Label htmlFor="name">Receipt Name</Label>
+            <Input
+              id="name"
+              placeholder="e.g., Grocery Shopping"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
+            />
           </div>
-          <div>
-            <Label htmlFor="amount">Amount</Label>
-            <Input id="amount" name="amount" type="number" step="0.01" required />
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="amount">Amount</Label>
+              <Input
+                id="amount"
+                type="number"
+                step="0.01"
+                placeholder="0.00"
+                value={formData.amount}
+                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="date">Date</Label>
+              <Input
+                id="date"
+                type="date"
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                required
+              />
+            </div>
           </div>
-          <div>
+
+          <div className="space-y-2">
             <Label htmlFor="merchant">Merchant</Label>
-            <Input id="merchant" name="merchant" />
+            <Input
+              id="merchant"
+              placeholder="e.g., Walmart"
+              value={formData.merchant}
+              onChange={(e) => setFormData({ ...formData, merchant: e.target.value })}
+            />
           </div>
-          <div>
+
+          <div className="space-y-2">
             <Label htmlFor="category">Category</Label>
-            <Input id="category" name="category" />
+            <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                {receiptCategories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          <div>
-            <Label htmlFor="date">Date</Label>
-            <Input id="date" name="date" type="date" required />
+
+          <div className="space-y-2">
+            <Label htmlFor="notes">Notes (Optional)</Label>
+            <Textarea
+              id="notes"
+              placeholder="Add any additional notes..."
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              rows={3}
+            />
           </div>
-          <div>
-            <Label htmlFor="notes">Notes</Label>
-            <Input id="notes" name="notes" />
+
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Adding...' : 'Add Receipt'}
+            </Button>
           </div>
-          <Button type="submit" disabled={loading}>
-            {loading ? 'Adding...' : 'Add Receipt'}
-          </Button>
         </form>
       </DialogContent>
     </Dialog>
