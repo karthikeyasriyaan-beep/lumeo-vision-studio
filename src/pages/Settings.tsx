@@ -37,7 +37,7 @@ export default function Settings() {
         supabase.from('loans').delete().eq('user_id', user.id),
         supabase.from('subscriptions').delete().eq('user_id', user.id),
         supabase.from('receipts').delete().eq('user_id', user.id),
-        supabase.from('goals').delete().eq('user_id', user.id),
+        supabase.from('savings').delete().eq('user_id', user.id),
       ];
       
       const results = await Promise.all(clearPromises);

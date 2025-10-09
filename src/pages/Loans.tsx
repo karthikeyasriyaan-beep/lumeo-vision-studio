@@ -95,7 +95,7 @@ export default function Loans() {
           {loans.length > 0 ? (
             <div className="space-y-6">
               {loans.map((loan) => {
-                const progressPercentage = ((Number(loan.principal_amount) - Number(loan.current_balance)) / Number(loan.principal_amount)) * 100;
+                const progressPercentage = ((Number(loan.initial_amount) - Number(loan.current_balance)) / Number(loan.initial_amount)) * 100;
                 
                 return (
                   <div key={loan.id} className="p-4 rounded-lg bg-background/50 border border-border/50 hover:bg-background/80 transition-colors space-y-4">
@@ -106,7 +106,7 @@ export default function Loans() {
                         </div>
                         <div className="space-y-1 flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="font-medium text-base sm:text-lg break-words">{loan.title}</h3>
+                            <h3 className="font-medium text-base sm:text-lg break-words">{loan.name}</h3>
                             <Button
                               variant="ghost"
                               size="icon"
@@ -118,7 +118,7 @@ export default function Loans() {
                             <Badge variant="destructive" className="text-xs">debt</Badge>
                           </div>
                           <p className="text-xs sm:text-sm text-muted-foreground break-words">
-                            Next payment: {loan.due_date ? new Date(loan.due_date).toLocaleDateString() : 'Not set'} • {loan.interest_rate || 0}% APR
+                            Next payment: {loan.end_date ? new Date(loan.end_date).toLocaleDateString() : 'Not set'} • {loan.interest_rate || 0}% APR
                           </p>
                         </div>
                       </div>
@@ -133,7 +133,7 @@ export default function Loans() {
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span>Remaining: {formatAmount(Number(loan.current_balance))}</span>
-                        <span>Total: {formatAmount(Number(loan.principal_amount))}</span>
+                        <span>Total: {formatAmount(Number(loan.initial_amount))}</span>
                       </div>
                       <Progress value={progressPercentage} className="h-2" />
                       <p className="text-xs text-muted-foreground text-center">
@@ -170,7 +170,7 @@ export default function Loans() {
                 return (
                   <div key={loan.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 py-2">
                     <div>
-                      <p className="font-medium">{loan.title}</p>
+                      <p className="font-medium">{loan.name}</p>
                       <p className="text-sm text-muted-foreground">
                         {monthsRemaining} months remaining
                       </p>

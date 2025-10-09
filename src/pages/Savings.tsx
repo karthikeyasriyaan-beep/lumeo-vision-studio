@@ -123,7 +123,7 @@ const Savings = () => {
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-2 flex-wrap">
-                            <h3 className="text-lg sm:text-xl font-semibold break-words">{saving.title}</h3>
+                            <h3 className="text-lg sm:text-xl font-semibold break-words">{saving.name}</h3>
                             <Button
                               variant="ghost"
                               size="icon"
@@ -141,8 +141,8 @@ const Savings = () => {
                               <Pencil className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                             </Button>
                           </div>
-                          {saving.description && (
-                            <p className="text-sm text-muted-foreground break-words">{saving.description}</p>
+                          {saving.notes && (
+                            <p className="text-sm text-muted-foreground break-words">{saving.notes}</p>
                           )}
                           {saving.category && (
                             <Badge variant="outline" className="mt-2 text-xs">{saving.category}</Badge>
@@ -164,9 +164,9 @@ const Savings = () => {
                         </div>
                         <Progress value={progress} className="h-3" />
                       </div>
-                      {saving.target_date && (
+                      {saving.deadline && (
                         <div className="mt-3 text-sm text-muted-foreground">
-                          Target Date: {new Date(saving.target_date).toLocaleDateString()}
+                          Target Date: {new Date(saving.deadline).toLocaleDateString()}
                         </div>
                       )}
                     </div>

@@ -116,10 +116,10 @@ export default function Receipts() {
               {receipts.map((receipt) => (
                 <div key={receipt.id} className="flex items-center justify-between p-4 rounded-lg bg-background/50 border border-border/50 hover:bg-background/80 transition-colors">
                   <div className="flex items-center gap-4">
-                  {receipt.image_url ? (
+                   {receipt.image_url ? (
                     <img 
                       src={receipt.image_url} 
-                      alt={receipt.title}
+                      alt={receipt.name}
                       className="w-16 h-16 rounded-lg object-cover"
                     />
                   ) : (
@@ -129,7 +129,7 @@ export default function Receipts() {
                   )}
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-medium text-lg">{receipt.title}</h3>
+                      <h3 className="font-medium text-lg">{receipt.name}</h3>
                       <Button
                         variant="ghost"
                         size="icon"

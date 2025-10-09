@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCurrency } from "@/components/currency-selector";
 import { AddIncomeDialog } from "@/components/forms/AddIncomeDialog";
 import { AddExpenseDialog } from "@/components/forms/AddExpenseDialog";
-import EditIncomeDialog from "@/components/forms/EditIncomeDialog";
+import EditIncomeDialog from "@/components/forms/Edit IncomeDialog";
 import EditExpenseDialog from "@/components/forms/EditExpenseDialog";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -60,10 +60,12 @@ export default function Transactions() {
     ...expenses.map(item => ({ ...item, type: 'expense' as const }))
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  const filteredTransactions = allTransactions.filter(t => 
-    t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (t.description?.toLowerCase() || '').includes(searchQuery.toLowerCase())
-  );
+  const filteredTransactions = allTransactions.filter(t => {
+    const title = t.type === 'income' ? t.source : t.name;
+    const description = t.notes || '';
+    return title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      description.toLowerCase().includes(searchQuery.toLowerCase());
+  });
 
   return (
     <div className="relative min-h-screen p-6 lg:p-8">
@@ -193,7 +195,7 @@ export default function Transactions() {
                         </div>
                         <div className="space-y-1">
                           <div className="flex items-center gap-3">
-                            <h3 className="font-medium">{transaction.title}</h3>
+                            <h3 className="font-medium">{transaction.type === 'income' ? transaction.source : transaction.name}</h3>
                             {transaction.category && (
                               <Badge variant="outline">{transaction.category}</Badge>
                             )}
@@ -230,7 +232,7 @@ export default function Transactions() {
                       </div>
                       <div className="space-y-1">
                         <div className="flex items-center gap-3">
-                          <h3 className="font-medium">{item.title}</h3>
+                          <h3 className="font-medium">{item.source}</h3>
                           {item.category && <Badge variant="outline">{item.category}</Badge>}
                         </div>
                         <p className="text-sm text-muted-foreground">
@@ -258,7 +260,7 @@ export default function Transactions() {
                       </div>
                       <div className="space-y-1">
                         <div className="flex items-center gap-3">
-                          <h3 className="font-medium">{item.title}</h3>
+                          <h3 className="font-medium">{item.name}</h3>
                           {item.category && <Badge variant="outline">{item.category}</Badge>}
                         </div>
                         <p className="text-sm text-muted-foreground">
