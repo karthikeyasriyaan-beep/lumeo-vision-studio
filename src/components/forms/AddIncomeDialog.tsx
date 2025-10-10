@@ -108,21 +108,6 @@ export function AddIncomeDialog({ onSuccess }: AddIncomeDialogProps) {
             />
           </div>
           
-          <div className="space-y-2">
-            <Label htmlFor="category">Category</Label>
-            <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                {incomeCategories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">

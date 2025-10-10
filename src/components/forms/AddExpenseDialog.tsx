@@ -31,10 +31,10 @@ export function AddExpenseDialog({ onSuccess }: AddExpenseDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    title: "",
+    name: "",
     amount: "",
     category: "",
-    description: "",
+    notes: "",
     date: new Date().toISOString().split('T')[0]
   });
   
@@ -51,10 +51,10 @@ export function AddExpenseDialog({ onSuccess }: AddExpenseDialogProps) {
         .from('expenses')
         .insert({
           user_id: user.id,
-          name: formData.title,
+          name: formData.name,
           amount: parseFloat(formData.amount),
           category: formData.category,
-          notes: formData.description,
+          notes: formData.notes,
           date: formData.date
         });
 
@@ -62,14 +62,14 @@ export function AddExpenseDialog({ onSuccess }: AddExpenseDialogProps) {
 
       toast({
         title: "Expense added successfully",
-        description: `${formData.title} has been added to your expense records.`,
+        description: `${formData.name} has been added to your expense records.`,
       });
 
       setFormData({
-        title: "",
+        name: "",
         amount: "",
         category: "",
-        description: "",
+        notes: "",
         date: new Date().toISOString().split('T')[0]
       });
       setOpen(false);
@@ -100,19 +100,14 @@ export function AddExpenseDialog({ onSuccess }: AddExpenseDialogProps) {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
-            <Select value={formData.title} onValueChange={(value) => setFormData({ ...formData, title: value })}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select expense type" />
-              </SelectTrigger>
-              <SelectContent>
-                {expenseCategories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label htmlFor="name">Title</Label>
+            <Input
+              id="name"
+              placeholder="e.g., Groceries, Rent"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
+            />
           </div>
           
           <div className="grid grid-cols-2 gap-4">
@@ -141,12 +136,12 @@ export function AddExpenseDialog({ onSuccess }: AddExpenseDialogProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description (Optional)</Label>
+            <Label htmlFor="notes">Notes (Optional)</Label>
             <Textarea
-              id="description"
+              id="notes"
               placeholder="Add any additional notes..."
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               rows={3}
             />
           </div>

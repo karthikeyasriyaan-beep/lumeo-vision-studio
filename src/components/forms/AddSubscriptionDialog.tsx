@@ -41,7 +41,7 @@ export function AddSubscriptionDialog({ onSuccess }: AddSubscriptionDialogProps)
     name: "",
     amount: "",
     category: "",
-    description: "",
+    notes: "",
     billing_cycle: "",
     next_billing_date: ""
   });
@@ -62,7 +62,7 @@ export function AddSubscriptionDialog({ onSuccess }: AddSubscriptionDialogProps)
           name: formData.name,
           amount: parseFloat(formData.amount),
           category: formData.category,
-          description: formData.description,
+          notes: formData.notes,
           billing_cycle: formData.billing_cycle,
           next_billing_date: formData.next_billing_date,
           status: 'active'
@@ -79,7 +79,7 @@ export function AddSubscriptionDialog({ onSuccess }: AddSubscriptionDialogProps)
         name: "",
         amount: "",
         category: "",
-        description: "",
+        notes: "",
         billing_cycle: "",
         next_billing_date: ""
       });
@@ -112,24 +112,13 @@ export function AddSubscriptionDialog({ onSuccess }: AddSubscriptionDialogProps)
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Service Name</Label>
-            <Select value={formData.name} onValueChange={(value) => setFormData({ ...formData, name: value })}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select service" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Netflix">Netflix</SelectItem>
-                <SelectItem value="Spotify">Spotify</SelectItem>
-                <SelectItem value="Amazon Prime">Amazon Prime</SelectItem>
-                <SelectItem value="Disney+">Disney+</SelectItem>
-                <SelectItem value="Apple Music">Apple Music</SelectItem>
-                <SelectItem value="YouTube Premium">YouTube Premium</SelectItem>
-                <SelectItem value="Adobe Creative Cloud">Adobe Creative Cloud</SelectItem>
-                <SelectItem value="Microsoft 365">Microsoft 365</SelectItem>
-                <SelectItem value="Dropbox">Dropbox</SelectItem>
-                <SelectItem value="Gym Membership">Gym Membership</SelectItem>
-                <SelectItem value="Other">Other</SelectItem>
-              </SelectContent>
-            </Select>
+            <Input
+              id="name"
+              placeholder="e.g., Netflix, Spotify"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
+            />
           </div>
           
           <div className="grid grid-cols-2 gap-4">
@@ -174,12 +163,12 @@ export function AddSubscriptionDialog({ onSuccess }: AddSubscriptionDialogProps)
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description (Optional)</Label>
+            <Label htmlFor="notes">Notes (Optional)</Label>
             <Textarea
-              id="description"
+              id="notes"
               placeholder="Add any additional notes..."
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               rows={3}
             />
           </div>
