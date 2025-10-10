@@ -45,7 +45,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         <div className="flex h-full flex-col">
           {/* Logo */}
           <div className="flex h-16 items-center border-b border-border px-6">
-            <h1 className="text-2xl font-bold gradient-text">Lumeo</h1>
+            <h1 className="text-2xl font-bold gradient-text font-display">Trackora</h1>
           </div>
 
           {/* Navigation */}

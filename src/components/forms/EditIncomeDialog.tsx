@@ -8,14 +8,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Trash2 } from 'lucide-react';
 
-export default function EditExpenseDialog({ expense, open, onOpenChange, onSuccess }: any) {
+export default function EditIncomeDialog({ income, open, onOpenChange, onSuccess }: any) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: expense?.name || '',
-    amount: expense?.amount || '',
-    date: expense?.date || new Date().toISOString().split('T')[0],
-    category: expense?.category || '',
-    notes: expense?.notes || ''
+    source: income?.source || '',
+    amount: income?.amount || '',
+    date: income?.date || new Date().toISOString().split('T')[0],
+    category: income?.category || '',
+    notes: income?.notes || ''
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -24,45 +24,45 @@ export default function EditExpenseDialog({ expense, open, onOpenChange, onSucce
 
     try {
       const { error } = await supabase
-        .from('expenses')
+        .from('income')
         .update({
-          name: formData.name,
+          source: formData.source,
           amount: parseFloat(formData.amount),
           date: formData.date,
           category: formData.category,
           notes: formData.notes
         })
-        .eq('id', expense.id);
+        .eq('id', income.id);
 
       if (error) throw error;
 
-      toast.success('Expense updated successfully');
+      toast.success('Income updated successfully');
       onSuccess?.();
       onOpenChange(false);
     } catch (error: any) {
-      toast.error(error.message || 'Failed to update expense');
+      toast.error(error.message || 'Failed to update income');
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this expense?')) return;
+    if (!confirm('Are you sure you want to delete this income?')) return;
     
     setLoading(true);
     try {
       const { error } = await supabase
-        .from('expenses')
+        .from('income')
         .delete()
-        .eq('id', expense.id);
+        .eq('id', income.id);
 
       if (error) throw error;
 
-      toast.success('Expense deleted successfully');
+      toast.success('Income deleted successfully');
       onSuccess?.();
       onOpenChange(false);
     } catch (error: any) {
-      toast.error(error.message || 'Failed to delete expense');
+      toast.error(error.message || 'Failed to delete income');
     } finally {
       setLoading(false);
     }
@@ -72,15 +72,15 @@ export default function EditExpenseDialog({ expense, open, onOpenChange, onSucce
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Edit Expense</DialogTitle>
+          <DialogTitle>Edit Income</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="source">Source</Label>
             <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              id="source"
+              value={formData.source}
+              onChange={(e) => setFormData({ ...formData, source: e.target.value })}
               required
             />
           </div>

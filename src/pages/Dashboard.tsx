@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import BackgroundBlobs from "@/components/BackgroundBlobs";
 import DashboardLayout from "@/components/DashboardLayout";
+import LiveSummaryBar from "@/components/LiveSummaryBar";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -154,23 +155,26 @@ export default function Dashboard() {
       <div className="relative space-y-6 animate-slide-up">
         <BackgroundBlobs />
         
+        {/* Live Summary Bar */}
+        <LiveSummaryBar />
+        
         {/* Welcome Section */}
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold gradient-text">Welcome Back!</h1>
-          <p className="text-muted-foreground">Here's your financial overview</p>
+          <h1 className="text-3xl font-bold gradient-text font-display">Welcome Back</h1>
+          <p className="text-muted-foreground">Your intelligent financial companion</p>
         </div>
 
         {/* Stats Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {stats.map((stat, index) => (
-            <Card key={index} className="glass hover-glow">
+            <Card key={index} className="glass hover-glow overflow-hidden">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
-                    <h3 className="text-2xl font-bold mt-2">{stat.value}</h3>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-muted-foreground mb-1">{stat.title}</p>
+                    <h3 className="text-2xl font-bold animate-count-up">{stat.value}</h3>
                   </div>
-                  <div className={`p-3 rounded-lg ${stat.bgColor}`}>
+                  <div className={`p-3 rounded-xl ${stat.bgColor}`}>
                     <stat.icon className={`h-6 w-6 ${stat.iconColor}`} />
                   </div>
                 </div>
@@ -181,55 +185,63 @@ export default function Dashboard() {
 
         {/* Quick Actions */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="glass hover-glow cursor-pointer">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Receipt className="h-5 w-5" />
+          <Card className="glass hover-lift cursor-pointer group">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base font-display">
+                <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                  <Receipt className="h-4 w-4 text-primary" />
+                </div>
                 Receipts
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">{receipts.length}</p>
-              <p className="text-sm text-muted-foreground">Total uploaded</p>
+              <p className="text-3xl font-bold mb-1 animate-count-up">{receipts.length}</p>
+              <p className="text-xs text-muted-foreground">Total uploaded</p>
             </CardContent>
           </Card>
 
-          <Card className="glass hover-glow cursor-pointer">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <DollarSign className="h-5 w-5" />
+          <Card className="glass hover-lift cursor-pointer group">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base font-display">
+                <div className="p-2 rounded-lg bg-accent/10 group-hover:bg-accent/20 transition-colors">
+                  <DollarSign className="h-4 w-4 text-accent" />
+                </div>
                 Transactions
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">{income.length + expenses.length}</p>
-              <p className="text-sm text-muted-foreground">This month</p>
+              <p className="text-3xl font-bold mb-1 animate-count-up">{income.length + expenses.length}</p>
+              <p className="text-xs text-muted-foreground">This month</p>
             </CardContent>
           </Card>
 
-          <Card className="glass hover-glow cursor-pointer">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <PiggyBank className="h-5 w-5" />
+          <Card className="glass hover-lift cursor-pointer group">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base font-display">
+                <div className="p-2 rounded-lg bg-success/10 group-hover:bg-success/20 transition-colors">
+                  <PiggyBank className="h-4 w-4 text-success" />
+                </div>
                 Goals
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">{savings.length}</p>
-              <p className="text-sm text-muted-foreground">Active goals</p>
+              <p className="text-3xl font-bold mb-1 animate-count-up">{savings.length}</p>
+              <p className="text-xs text-muted-foreground">Active goals</p>
             </CardContent>
           </Card>
 
-          <Card className="glass hover-glow cursor-pointer">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <CreditCard className="h-5 w-5" />
+          <Card className="glass hover-lift cursor-pointer group">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base font-display">
+                <div className="p-2 rounded-lg bg-destructive/10 group-hover:bg-destructive/20 transition-colors">
+                  <CreditCard className="h-4 w-4 text-destructive" />
+                </div>
                 Loans
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">{loans.length}</p>
-              <p className="text-sm text-muted-foreground">Active loans</p>
+              <p className="text-3xl font-bold mb-1 animate-count-up">{loans.length}</p>
+              <p className="text-xs text-muted-foreground">Active loans</p>
             </CardContent>
           </Card>
         </div>

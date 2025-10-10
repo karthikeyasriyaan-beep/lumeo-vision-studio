@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCurrency } from "@/components/currency-selector";
 import { AddIncomeDialog } from "@/components/forms/AddIncomeDialog";
 import { AddExpenseDialog } from "@/components/forms/AddExpenseDialog";
-import EditIncomeDialog from "@/components/forms/Edit IncomeDialog";
+import EditIncomeDialog from "@/components/forms/EditIncomeDialog";
 import EditExpenseDialog from "@/components/forms/EditExpenseDialog";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
