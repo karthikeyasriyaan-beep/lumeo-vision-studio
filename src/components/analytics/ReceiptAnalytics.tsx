@@ -21,31 +21,33 @@ export function ReceiptAnalytics({ receipts, formatAmount }: ReceiptAnalyticsPro
   }, {});
 
   return (
-    <Card className="glass">
+    <Card className="glass-strong hover-lift border-border/50">
       <CardHeader>
-        <CardTitle>Receipt Analytics</CardTitle>
+        <CardTitle className="font-display text-xl">Receipts</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-3 gap-4 mb-4">
-          <div>
-            <p className="text-sm text-muted-foreground">Total Receipts</p>
-            <p className="text-2xl font-bold">{totalReceipts}</p>
+      <CardContent className="space-y-6">
+        <div className="grid grid-cols-3 gap-4">
+          <div className="p-3 rounded-lg bg-background/40 backdrop-blur space-y-1">
+            <p className="text-xs text-muted-foreground uppercase">Total</p>
+            <p className="text-2xl font-bold font-display">{totalReceipts}</p>
           </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Total Amount</p>
-            <p className="text-2xl font-bold">{formatAmount(totalAmount)}</p>
+          <div className="p-3 rounded-lg bg-background/40 backdrop-blur space-y-1">
+            <p className="text-xs text-muted-foreground uppercase">Amount</p>
+            <p className="text-2xl font-bold font-display">{formatAmount(totalAmount)}</p>
           </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Average</p>
-            <p className="text-2xl font-bold">{formatAmount(avgAmount)}</p>
+          <div className="p-3 rounded-lg bg-background/40 backdrop-blur space-y-1">
+            <p className="text-xs text-muted-foreground uppercase">Average</p>
+            <p className="text-2xl font-bold font-display">{formatAmount(avgAmount)}</p>
           </div>
         </div>
-        <div className="space-y-2">
+
+        <div className="space-y-3 mt-6">
+          <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">By Category</h4>
           {Object.entries(categoryBreakdown).map(([category, data]: [string, any]) => (
-            <div key={category} className="flex justify-between items-center p-2 rounded-lg bg-secondary/50">
+            <div key={category} className="flex justify-between items-center p-3 rounded-lg bg-background/20 hover-lift">
               <span className="text-sm font-medium">{category}</span>
               <div className="text-right">
-                <p className="text-sm font-semibold">{formatAmount(data.total)}</p>
+                <p className="text-sm font-bold">{formatAmount(data.total)}</p>
                 <p className="text-xs text-muted-foreground">{data.count} receipts</p>
               </div>
             </div>

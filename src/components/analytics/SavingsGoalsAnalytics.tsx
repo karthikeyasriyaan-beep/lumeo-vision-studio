@@ -14,33 +14,41 @@ export function SavingsGoalsAnalytics({ savings, goals, formatAmount }: SavingsG
   const overallProgress = totalTarget > 0 ? (totalSaved / totalTarget) * 100 : 0;
 
   return (
-    <Card className="glass">
+    <Card className="glass-strong hover-lift border-border/50">
       <CardHeader>
-        <CardTitle>Savings & Goals Analytics</CardTitle>
+        <CardTitle className="font-display text-xl">Savings & Goals</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-          <p className="text-sm text-muted-foreground">Total Saved</p>
-          <p className="text-2xl font-bold">{formatAmount(totalSaved)}</p>
-          <p className="text-xs text-muted-foreground">of {formatAmount(totalTarget)} target</p>
+      <CardContent className="space-y-6">
+        <div className="p-4 rounded-lg bg-background/40 backdrop-blur space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-muted-foreground">Total Target</span>
+            <span className="font-bold text-lg">{formatAmount(totalTarget)}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-muted-foreground">Total Saved</span>
+            <span className="font-bold text-lg text-chart-2">{formatAmount(totalSaved)}</span>
+          </div>
         </div>
-        <div>
-          <p className="text-sm text-muted-foreground mb-2">Overall Progress</p>
-          <Progress value={overallProgress} className="h-2" />
-          <p className="text-xs text-muted-foreground mt-1">{overallProgress.toFixed(1)}% complete</p>
-        </div>
+
         <div className="space-y-3">
-          {allGoals.map(goal => {
+          <div className="flex justify-between text-sm">
+            <span className="font-medium">Overall Progress</span>
+            <span className="font-bold">{overallProgress.toFixed(1)}%</span>
+          </div>
+          <Progress value={overallProgress} className="h-3" />
+        </div>
+
+        <div className="space-y-4 mt-6">
+          <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Individual Goals</h4>
+          {allGoals.map((goal) => {
             const progress = ((Number(goal.current_amount) || 0) / (Number(goal.target_amount) || 1)) * 100;
             return (
-              <div key={goal.id} className="space-y-1">
+              <div key={goal.id} className="space-y-2 p-3 rounded-lg bg-background/20">
                 <div className="flex justify-between text-sm">
                   <span className="font-medium">{goal.name}</span>
-                  <span className="text-muted-foreground">
-                    {formatAmount(Number(goal.current_amount || 0))} / {formatAmount(Number(goal.target_amount))}
-                  </span>
+                  <span className="text-xs text-muted-foreground">{formatAmount(Number(goal.current_amount || 0))} / {formatAmount(Number(goal.target_amount))}</span>
                 </div>
-                <Progress value={Math.min(progress, 100)} className="h-1" />
+                <Progress value={Math.min(progress, 100)} className="h-2" />
               </div>
             );
           })}

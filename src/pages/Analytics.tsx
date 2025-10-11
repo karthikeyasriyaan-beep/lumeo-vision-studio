@@ -108,22 +108,28 @@ export default function Analytics() {
   }
 
   return (
-    <div className="relative min-h-screen p-6 space-y-8 animate-slide-up">
+    <div className="relative min-h-screen p-8 space-y-8 animate-fade-in">
       <BackgroundBlobs />
       
       {/* Header */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold gradient-text">Analytics Dashboard</h1>
-        <p className="text-muted-foreground">Comprehensive insights into your financial data</p>
+      <div className="space-y-3 mb-8">
+        <h1 className="text-4xl font-bold font-display tracking-tight">Analytics Dashboard</h1>
+        <p className="text-muted-foreground text-lg">Comprehensive insights into your financial performance</p>
       </div>
 
-      {/* Analytics Sections */}
-      <div className="space-y-8">
+      {/* Analytics Grid */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <ExpenseAnalytics expenses={expenses} formatAmount={formatAmount} />
         <IncomeAnalytics income={income} formatAmount={formatAmount} />
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <SubscriptionAnalytics subscriptions={subscriptions} formatAmount={formatAmount} />
         <LoanAnalytics loans={loans} formatAmount={formatAmount} />
         <ReceiptAnalytics receipts={receipts} formatAmount={formatAmount} />
+      </div>
+
+      <div className="w-full">
         <SavingsGoalsAnalytics savings={savings} goals={[]} formatAmount={formatAmount} />
       </div>
     </div>

@@ -24,25 +24,35 @@ export function ExpenseAnalytics({ expenses, formatAmount }: ExpenseAnalyticsPro
   }));
 
   return (
-    <Card className="glass">
+    <Card className="glass-strong hover-lift border-border/50">
       <CardHeader>
-        <CardTitle>Expense Analytics</CardTitle>
+        <CardTitle className="font-display text-xl">Expense Analytics</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="mb-4">
-          <p className="text-sm text-muted-foreground">Total Expenses</p>
-          <p className="text-2xl font-bold">{formatAmount(totalExpenses)}</p>
+      <CardContent className="space-y-6">
+        <div className="p-4 rounded-lg bg-background/40 backdrop-blur">
+          <p className="text-sm text-muted-foreground mb-1">Total Expenses</p>
+          <p className="text-3xl font-bold font-display gradient-text animate-count-up">{formatAmount(totalExpenses)}</p>
         </div>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-            <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
-            <YAxis stroke="hsl(var(--muted-foreground))" />
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+            <XAxis 
+              dataKey="name" 
+              stroke="hsl(var(--muted-foreground))" 
+              fontSize={12}
+              tickLine={false}
+            />
+            <YAxis 
+              stroke="hsl(var(--muted-foreground))" 
+              fontSize={12}
+              tickLine={false}
+            />
             <Tooltip 
               contentStyle={{ 
                 backgroundColor: 'hsl(var(--card))',
                 border: '1px solid hsl(var(--border))',
-                borderRadius: '8px'
+                borderRadius: '12px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
               }}
             />
             <Bar dataKey="amount" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />

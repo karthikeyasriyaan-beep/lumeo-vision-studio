@@ -24,38 +24,42 @@ export function SubscriptionAnalytics({ subscriptions, formatAmount }: Subscript
   }));
 
   return (
-    <Card className="glass">
+    <Card className="glass-strong hover-lift border-border/50">
       <CardHeader>
-        <CardTitle>Subscription Analytics</CardTitle>
+        <CardTitle className="font-display text-xl">Subscriptions</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="mb-4">
-          <p className="text-sm text-muted-foreground">Monthly Total</p>
-          <p className="text-2xl font-bold">{formatAmount(totalMonthly)}</p>
+      <CardContent className="space-y-6">
+        <div className="p-4 rounded-lg bg-background/40 backdrop-blur">
+          <p className="text-sm text-muted-foreground mb-1">Monthly Cost</p>
+          <p className="text-3xl font-bold font-display gradient-text animate-count-up">{formatAmount(totalMonthly)}</p>
         </div>
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={220}>
           <PieChart>
             <Pie
               data={chartData}
               cx="50%"
               cy="50%"
               labelLine={false}
-              outerRadius={80}
+              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              outerRadius={70}
               fill="hsl(var(--primary))"
               dataKey="value"
             >
               {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={COLORS[index % COLORS.length]} 
+                />
               ))}
             </Pie>
             <Tooltip 
               contentStyle={{ 
                 backgroundColor: 'hsl(var(--card))',
                 border: '1px solid hsl(var(--border))',
-                borderRadius: '8px'
+                borderRadius: '12px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
               }}
             />
-            <Legend />
           </PieChart>
         </ResponsiveContainer>
       </CardContent>

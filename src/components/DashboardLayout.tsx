@@ -90,16 +90,17 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         sidebarOpen ? "pl-64" : "pl-0"
       )}>
         {/* Header */}
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-card backdrop-blur-xl px-6">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border/50 glass backdrop-blur-xl px-6 shadow-sm">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="hover-lift"
             >
               {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
-            <h2 className="text-lg font-semibold">
+            <h2 className="text-lg font-semibold font-display">
               {navigation.find(item => item.href === location.pathname)?.name || 'Dashboard'}
             </h2>
           </div>
