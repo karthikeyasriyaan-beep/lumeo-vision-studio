@@ -18,16 +18,27 @@ const ReceiptUpload = ({ onUploadSuccess, currentImage }: ReceiptUploadProps) =>
   const uploadFile = async (file: File) => {
     try {
       setUploading(true);
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
+      
+      // Create a unique file name with timestamp
+      const timestamp = Date.now();
+      const fileExt = file.name.split('.').pop() || 'jpg';
+      const fileName = `${timestamp}_${Math.random().toString(36).substring(7)}.${fileExt}`;
       const filePath = `${fileName}`;
 
+      // Upload with upsert to avoid conflicts
       const { error: uploadError } = await supabase.storage
         .from('receipts')
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw new Error(uploadError.message);
+      }
 
+      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('receipts')
         .getPublicUrl(filePath);
@@ -35,9 +46,9 @@ const ReceiptUpload = ({ onUploadSuccess, currentImage }: ReceiptUploadProps) =>
       setPreview(publicUrl);
       onUploadSuccess(publicUrl);
       toast.success("Receipt uploaded successfully!");
-    } catch (error) {
+    } catch (error: any) {
       console.error('Upload error:', error);
-      toast.error("Failed to upload receipt");
+      toast.error(error?.message || "Failed to upload receipt. Please try again.");
     } finally {
       setUploading(false);
     }
@@ -47,8 +58,16 @@ const ReceiptUpload = ({ onUploadSuccess, currentImage }: ReceiptUploadProps) =>
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      toast.error("Please upload an image file");
+    // Allow images and PDF files
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/heic', 'application/pdf'];
+    if (!allowedTypes.some(type => file.type.includes(type.split('/')[1]))) {
+      toast.error("Please upload an image or PDF file");
+      return;
+    }
+
+    // Check file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("File size must be less than 10MB");
       return;
     }
 
@@ -80,14 +99,14 @@ const ReceiptUpload = ({ onUploadSuccess, currentImage }: ReceiptUploadProps) =>
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept="image/*,application/pdf"
             className="hidden"
             onChange={handleFileChange}
           />
           <input
             ref={cameraInputRef}
             type="file"
-            accept="image/*"
+            accept="image/*,application/pdf"
             capture="environment"
             className="hidden"
             onChange={handleFileChange}

@@ -91,8 +91,8 @@ const Welcome = () => {
   const whyChoose = [
     {
       icon: Shield,
-      title: "Bank-Level Security",
-      description: "Your data is fully encrypted and secured with enterprise-grade technology."
+      title: "Safe & Secure",
+      description: "Your data is fully encrypted and protected with enterprise-grade security."
     },
     {
       icon: Globe,
@@ -152,8 +152,8 @@ const Welcome = () => {
           transition={{ delay: 0.3, duration: 0.7 }}
           className="mt-8 text-lg md:text-2xl text-muted-foreground max-w-3xl leading-relaxed"
         >
-          The intelligent financial platform that transforms complex data into actionable insights. 
-          Track, analyze, and optimize your wealth with enterprise-grade tools.
+          Your intelligent financial companion. Track expenses, manage savings, and watch your wealth grow 
+          with powerful analytics and beautiful visualizations.
         </motion.p>
 
         <motion.div 
@@ -189,7 +189,7 @@ const Welcome = () => {
         >
           <div className="flex items-center gap-2">
             <Shield className="w-4 h-4 text-primary" />
-            Bank-level security
+            Safe & secure
           </div>
           <div className="flex items-center gap-2">
             <Zap className="w-4 h-4 text-primary" />
@@ -197,7 +197,7 @@ const Welcome = () => {
           </div>
           <div className="flex items-center gap-2">
             <Globe className="w-4 h-4 text-primary" />
-            Global compliance
+            Privacy first
           </div>
         </motion.div>
       </section>
@@ -251,7 +251,7 @@ const Welcome = () => {
             </span>
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            Built with security, compliance, and privacy-first principles — Lumeo is made for the serious investor.
+            Built with security, privacy, and transparency at its core — Lumeo helps you achieve your financial goals.
           </p>
         </div>
 
@@ -299,8 +299,8 @@ const Welcome = () => {
             </span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-12">
-            Join thousands of users who've taken control of their finances with Lumeo. 
-            Start tracking, analyzing, and growing your wealth today.
+            Take control of your financial future. Start tracking, saving, and growing your wealth 
+            with clarity and confidence.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">

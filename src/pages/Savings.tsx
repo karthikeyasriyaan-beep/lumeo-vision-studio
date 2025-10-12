@@ -51,7 +51,11 @@ const Savings = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight gradient-text">Savings Goals</h1>
-            <p className="text-muted-foreground mt-2">Track and grow your savings</p>
+            <p className="text-muted-foreground mt-2">
+              {savings.length > 0 
+                ? `You're building wealth! ${savings.length} ${savings.length === 1 ? 'goal' : 'goals'} in progress` 
+                : "Start your journey to financial freedom"}
+            </p>
           </div>
           <AddSavingsDialog onSuccess={refetch} />
         </div>
@@ -103,8 +107,8 @@ const Savings = () => {
             {savings.length === 0 ? (
               <div className="text-center py-12">
                 <Wallet className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-                <p className="text-muted-foreground text-lg">No savings goals yet</p>
-                <p className="text-sm text-muted-foreground mt-2">Start by creating your first savings goal</p>
+                <p className="text-muted-foreground text-lg">Your savings journey starts here</p>
+                <p className="text-sm text-muted-foreground mt-2">Set your first goal and watch your wealth grow</p>
               </div>
             ) : (
               <div className="space-y-4">

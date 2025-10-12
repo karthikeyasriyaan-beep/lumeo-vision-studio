@@ -44,7 +44,11 @@ export default function Receipts() {
       <div className="flex justify-between items-center">
         <div className="space-y-2">
           <h1 className="text-3xl font-bold gradient-text">Receipt Tracker</h1>
-          <p className="text-muted-foreground">Organize and manage your receipts digitally</p>
+          <p className="text-muted-foreground">
+            {receipts.length > 0 
+              ? `${receipts.length} ${receipts.length === 1 ? 'receipt' : 'receipts'} safely stored and organized` 
+              : "Your digital receipt vault awaits"}
+          </p>
         </div>
         <AddReceiptDialog onSuccess={() => refetch()} />
       </div>
@@ -166,8 +170,8 @@ export default function Receipts() {
           ) : (
                   <div className="text-center py-12 text-muted-foreground">
                     <Receipt className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                    <p className="text-lg font-medium mb-2">No receipts yet</p>
-                    <p className="text-sm">Start by uploading your first receipt to track expenses</p>
+                    <p className="text-lg font-medium mb-2">Start capturing your receipts</p>
+                    <p className="text-sm">Upload or snap a photo to keep track of every expense</p>
                   </div>
           )}
         </CardContent>

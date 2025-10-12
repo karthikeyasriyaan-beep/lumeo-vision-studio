@@ -151,18 +151,17 @@ export default function Dashboard() {
   ];
 
   return (
-    <DashboardLayout>
-      <div className="relative space-y-6 animate-slide-up">
-        <BackgroundBlobs />
-        
-        {/* Live Summary Bar */}
-        <LiveSummaryBar />
-        
-        {/* Welcome Section */}
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold gradient-text font-display">Welcome Back</h1>
-          <p className="text-muted-foreground">Your intelligent financial companion</p>
-        </div>
+    <div className="relative space-y-6 animate-slide-up">
+      <BackgroundBlobs />
+      
+      {/* Live Summary Bar */}
+      <LiveSummaryBar />
+      
+      {/* Welcome Section */}
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold gradient-text font-display">Welcome Back</h1>
+        <p className="text-muted-foreground">Track your wealth with clarity and confidence</p>
+      </div>
 
         {/* Stats Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -246,6 +245,5 @@ export default function Dashboard() {
           </Card>
         </div>
       </div>
-    </DashboardLayout>
   );
 }

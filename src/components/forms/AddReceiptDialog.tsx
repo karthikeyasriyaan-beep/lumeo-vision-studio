@@ -107,7 +107,6 @@ export function AddReceiptDialog({ onSuccess }: { onSuccess: () => void }) {
             <Label htmlFor="name">Receipt Name</Label>
             <Input
               id="name"
-              placeholder="e.g., Grocery Shopping"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
@@ -121,7 +120,6 @@ export function AddReceiptDialog({ onSuccess }: { onSuccess: () => void }) {
                 id="amount"
                 type="number"
                 step="0.01"
-                placeholder="0.00"
                 value={formData.amount}
                 onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                 required
@@ -143,7 +141,6 @@ export function AddReceiptDialog({ onSuccess }: { onSuccess: () => void }) {
             <Label htmlFor="merchant">Merchant</Label>
             <Input
               id="merchant"
-              placeholder="e.g., Walmart"
               value={formData.merchant}
               onChange={(e) => setFormData({ ...formData, merchant: e.target.value })}
             />
