@@ -41,19 +41,6 @@ const expenseTitles = [
   "Other",
 ];
 
-const expenseCategories = [
-  "Food & Dining",
-  "Transportation",
-  "Shopping",
-  "Entertainment",
-  "Bills & Utilities",
-  "Healthcare",
-  "Education",
-  "Travel",
-  "Home & Garden",
-  "Other",
-];
-
 export function AddExpenseDialog({ onSuccess }: AddExpenseDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -62,7 +49,6 @@ export function AddExpenseDialog({ onSuccess }: AddExpenseDialogProps) {
   const [formData, setFormData] = useState({
     name: "",
     amount: "",
-    category: "",
     notes: "",
     date: new Date().toISOString().split("T")[0],
   });
@@ -82,7 +68,6 @@ export function AddExpenseDialog({ onSuccess }: AddExpenseDialogProps) {
         user_id: user.id,
         name: titleToUse,
         amount: parseFloat(formData.amount),
-        category: formData.category,
         notes: formData.notes,
         date: formData.date,
       });
@@ -97,7 +82,6 @@ export function AddExpenseDialog({ onSuccess }: AddExpenseDialogProps) {
       setFormData({
         name: "",
         amount: "",
-        category: "",
         notes: "",
         date: new Date().toISOString().split("T")[0],
       });
@@ -210,28 +194,6 @@ export function AddExpenseDialog({ onSuccess }: AddExpenseDialogProps) {
             </div>
           </div>
 
-          {/* Category */}
-          <div className="space-y-2">
-            <Label htmlFor="category">Category</Label>
-            <Select
-              onValueChange={(value) =>
-                setFormData({ ...formData, category: value })
-              }
-              value={formData.category || ""}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                {expenseCategories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
           {/* Notes */}
           <div className="space-y-2">
             <Label htmlFor="notes">Notes (Optional)</Label>
@@ -248,7 +210,11 @@ export function AddExpenseDialog({ onSuccess }: AddExpenseDialogProps) {
 
           {/* Actions */}
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>
