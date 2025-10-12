@@ -1,84 +1,105 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import ReceiptUpload from './ReceiptUpload';
 
-const receiptCategories = [
-  "Food & Dining",
-  "Transportation",
-  "Shopping",
-  "Entertainment",
-  "Bills & Utilities",
-  "Healthcare",
-  "Business",
-  "Travel",
-  "Other"
-];
+interface AddReceiptDialogProps {
+  onSuccess: () => void;
+}
 
-export function AddReceiptDialog({ onSuccess }: { onSuccess: () => void }) {
+export function AddReceiptDialog({ onSuccess }: AddReceiptDialogProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    amount: "",
-    merchant: "",
-    category: "",
-    date: new Date().toISOString().split('T')[0],
-    notes: "",
-    image_url: ""
-  });
 
+  // Image upload
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+
+  // Other file upload
+  const [otherFile, setOtherFile] = useState<File | null>(null);
+  const [otherFileUrl, setOtherFileUrl] = useState<string | null>(null);
+
+  // Handle image selection & preview
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  // Handle other file selection
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    setOtherFile(e.target.files[0]);
+  };
+
+  // Upload to Supabase storage
+  const handleUpload = async (file: File, folder: string) => {
+    if (!user) return null;
+    const fileName = `${user.id}/${Date.now()}_${file.name}`;
+    const { data, error } = await supabase.storage.from(folder).upload(fileName, file);
+    if (error) throw error;
+    const { publicUrl, error: urlError } = supabase.storage.from(folder).getPublicUrl(data.path);
+    if (urlError) throw urlError;
+    return publicUrl;
+  };
+
+  // Handle submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || (!imageFile && !otherFile)) return;
 
     setLoading(true);
     try {
+      // Upload files if not already uploaded
+      let uploadedImageUrl = imageUrl;
+      let uploadedOtherUrl = otherFileUrl;
+
+      if (imageFile && !imageUrl) {
+        uploadedImageUrl = await handleUpload(imageFile, 'receipts');
+        setImageUrl(uploadedImageUrl);
+      }
+      if (otherFile && !otherFileUrl) {
+        uploadedOtherUrl = await handleUpload(otherFile, 'receipts');
+        setOtherFileUrl(uploadedOtherUrl);
+      }
+
+      // Save to Supabase DB
       const { error } = await supabase.from('receipts').insert({
         user_id: user.id,
-        name: formData.name,
-        amount: parseFloat(formData.amount),
-        merchant: formData.merchant,
-        category: formData.category,
-        date: formData.date,
-        notes: formData.notes,
-        image_url: formData.image_url
+        image_url: uploadedImageUrl,
+        file_url: uploadedOtherUrl,
+        created_at: new Date().toISOString(),
       });
 
       if (error) throw error;
 
       toast({
-        title: 'Receipt added successfully',
-        description: `${formData.name} has been added to your receipts.`
+        title: 'Receipt saved',
+        description: 'Your receipt and file have been added successfully.',
       });
-      
-      setFormData({
-        name: "",
-        amount: "",
-        merchant: "",
-        category: "",
-        date: new Date().toISOString().split('T')[0],
-        notes: "",
-        image_url: ""
-      });
+
+      // Reset all
+      setImageFile(null);
+      setImagePreview(null);
+      setImageUrl(null);
+      setOtherFile(null);
+      setOtherFileUrl(null);
       setOpen(false);
       onSuccess();
-    } catch (error) {
-      console.error('Error adding receipt:', error);
+    } catch (err) {
+      console.error('Save error:', err);
       toast({
         title: 'Error',
-        description: 'Failed to add receipt. Please try again.',
-        variant: 'destructive'
+        description: 'Failed to save receipt. Try again.',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -93,92 +114,43 @@ export function AddReceiptDialog({ onSuccess }: { onSuccess: () => void }) {
           Add Receipt
         </Button>
       </DialogTrigger>
+
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Add New Receipt</DialogTitle>
+          <DialogTitle>Upload Receipt</DialogTitle>
         </DialogHeader>
+
         <form onSubmit={handleSubmit} className="space-y-4">
-          <ReceiptUpload 
-            onUploadSuccess={(url) => setFormData({ ...formData, image_url: url })}
-            currentImage={formData.image_url}
-          />
-
-          <div className="space-y-2">
-            <Label htmlFor="name">Receipt Name</Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="amount">Amount</Label>
-              <Input
-                id="amount"
-                type="number"
-                step="0.01"
-                value={formData.amount}
-                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                required
+          {/* Image Upload */}
+          <div className="flex flex-col gap-2">
+            <label className="font-medium">Image Upload (Preview)</label>
+            <input type="file" accept="image/*" onChange={handleImageChange} />
+            {imagePreview && (
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="w-full max-h-64 object-contain border rounded"
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="date">Date</Label>
-              <Input
-                id="date"
-                type="date"
-                value={formData.date}
-                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                required
-              />
-            </div>
+            )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="merchant">Merchant</Label>
-            <Input
-              id="merchant"
-              value={formData.merchant}
-              onChange={(e) => setFormData({ ...formData, merchant: e.target.value })}
-            />
+          {/* Other File Upload */}
+          <div className="flex flex-col gap-2">
+            <label className="font-medium">Other File Upload</label>
+            <input type="file" onChange={handleFileChange} />
+            {otherFile && <p className="text-sm">{otherFile.name}</p>}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="category">Category</Label>
-            <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                {receiptCategories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes (Optional)</Label>
-            <Textarea
-              id="notes"
-              placeholder="Add any additional notes..."
-              value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              rows={3}
-            />
-          </div>
-
+          {/* Actions */}
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? 'Adding...' : 'Add Receipt'}
+            <Button
+              type="submit"
+              disabled={loading || (!imageFile && !otherFile)}
+            >
+              {loading ? 'Saving...' : 'Save Receipt'}
             </Button>
           </div>
         </form>
