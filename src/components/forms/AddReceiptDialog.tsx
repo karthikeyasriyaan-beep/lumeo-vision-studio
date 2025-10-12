@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
@@ -17,16 +17,19 @@ export function AddReceiptDialog({ onSuccess }: AddReceiptDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Image upload
+  // Image state
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
-  // Other file upload
+  // Other file state
   const [otherFile, setOtherFile] = useState<File | null>(null);
   const [otherFileUrl, setOtherFileUrl] = useState<string | null>(null);
 
-  // Handle image selection & preview
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Handle Image Selection or Camera Capture
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
     const file = e.target.files[0];
@@ -40,7 +43,24 @@ export function AddReceiptDialog({ onSuccess }: AddReceiptDialogProps) {
     setOtherFile(e.target.files[0]);
   };
 
-  // Upload to Supabase storage
+  // Drag-and-drop handlers
+  const handleDragOver = (e: React.DragEvent, type: 'image' | 'file') => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent, type: 'image' | 'file') => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+    if (type === 'image' && file.type.startsWith('image/')) {
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    } else if (type === 'file') {
+      setOtherFile(file);
+    }
+  };
+
+  // Upload to Supabase
   const handleUpload = async (file: File, folder: string) => {
     if (!user) return null;
     const fileName = `${user.id}/${Date.now()}_${file.name}`;
@@ -51,14 +71,13 @@ export function AddReceiptDialog({ onSuccess }: AddReceiptDialogProps) {
     return publicUrl;
   };
 
-  // Handle submit
+  // Submit handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || (!imageFile && !otherFile)) return;
 
     setLoading(true);
     try {
-      // Upload files if not already uploaded
       let uploadedImageUrl = imageUrl;
       let uploadedOtherUrl = otherFileUrl;
 
@@ -66,12 +85,12 @@ export function AddReceiptDialog({ onSuccess }: AddReceiptDialogProps) {
         uploadedImageUrl = await handleUpload(imageFile, 'receipts');
         setImageUrl(uploadedImageUrl);
       }
+
       if (otherFile && !otherFileUrl) {
         uploadedOtherUrl = await handleUpload(otherFile, 'receipts');
         setOtherFileUrl(uploadedOtherUrl);
       }
 
-      // Save to Supabase DB
       const { error } = await supabase.from('receipts').insert({
         user_id: user.id,
         image_url: uploadedImageUrl,
@@ -83,10 +102,10 @@ export function AddReceiptDialog({ onSuccess }: AddReceiptDialogProps) {
 
       toast({
         title: 'Receipt saved',
-        description: 'Your receipt and file have been added successfully.',
+        description: 'Your receipt has been added successfully.',
       });
 
-      // Reset all
+      // Reset
       setImageFile(null);
       setImagePreview(null);
       setImageUrl(null);
@@ -95,7 +114,7 @@ export function AddReceiptDialog({ onSuccess }: AddReceiptDialogProps) {
       setOpen(false);
       onSuccess();
     } catch (err) {
-      console.error('Save error:', err);
+      console.error(err);
       toast({
         title: 'Error',
         description: 'Failed to save receipt. Try again.',
@@ -115,41 +134,70 @@ export function AddReceiptDialog({ onSuccess }: AddReceiptDialogProps) {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
           <DialogTitle>Upload Receipt</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Image Upload */}
-          <div className="flex flex-col gap-2">
-            <label className="font-medium">Image Upload (Preview)</label>
-            <input type="file" accept="image/*" onChange={handleImageChange} />
-            {imagePreview && (
-              <img
-                src={imagePreview}
-                alt="Preview"
-                className="w-full max-h-64 object-contain border rounded"
-              />
-            )}
-          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-          {/* Other File Upload */}
-          <div className="flex flex-col gap-2">
-            <label className="font-medium">Other File Upload</label>
-            <input type="file" onChange={handleFileChange} />
-            {otherFile && <p className="text-sm">{otherFile.name}</p>}
+            {/* Image Upload Card */}
+            <div
+              className="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:border-gray-400 transition cursor-pointer"
+              onDragOver={(e) => handleDragOver(e, 'image')}
+              onDrop={(e) => handleDrop(e, 'image')}
+              onClick={() => imageInputRef.current?.click()}
+            >
+              <label className="font-medium mb-2">Image Upload (Camera)</label>
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                ref={imageInputRef}
+                onChange={handleImageChange}
+                className="hidden"
+              />
+              {imagePreview ? (
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="w-full h-48 object-contain mt-2 border rounded"
+                />
+              ) : (
+                <p className="text-gray-400">Drag & drop or click to capture</p>
+              )}
+            </div>
+
+            {/* Other File Upload Card */}
+            <div
+              className="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:border-gray-400 transition cursor-pointer"
+              onDragOver={(e) => handleDragOver(e, 'file')}
+              onDrop={(e) => handleDrop(e, 'file')}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <label className="font-medium mb-2">Other File Upload</label>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+              />
+              {otherFile ? (
+                <p className="text-sm mt-2">{otherFile.name}</p>
+              ) : (
+                <p className="text-gray-400">Drag & drop or click to upload</p>
+              )}
+            </div>
+
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end gap-2">
+          <div className="flex justify-end gap-2 mt-4">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={loading || (!imageFile && !otherFile)}
-            >
+            <Button type="submit" disabled={loading || (!imageFile && !otherFile)}>
               {loading ? 'Saving...' : 'Save Receipt'}
             </Button>
           </div>
