@@ -71,6 +71,7 @@ export function AddReceiptDialog({ onSuccess }: AddReceiptDialogProps) {
         user_id: user.id,
         name: 'Receipt',
         amount: 0,
+        date: new Date().toISOString().split('T')[0],
         image_url: uploadedImage,
         category: 'Other',
       });
