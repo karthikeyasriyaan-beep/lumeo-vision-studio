@@ -1,16 +1,10 @@
 import { useState, useRef } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client"; // optional, safe to keep
 
 interface AddReceiptDialogProps {
   onSuccess: () => void;
@@ -22,7 +16,6 @@ export function AddReceiptDialog({ onSuccess }: AddReceiptDialogProps) {
 
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [otherFile, setOtherFile] = useState<File | null>(null);
@@ -62,35 +55,19 @@ export function AddReceiptDialog({ onSuccess }: AddReceiptDialogProps) {
     }
   };
 
-  // Safe upload to Supabase or fallback
   const handleUpload = async (file: File) => {
-    try {
-      if (!supabase) throw new Error("Supabase not configured");
-      const filePath = `${user?.id || "guest"}/${Date.now()}_${file.name}`;
-      const { data, error } = await supabase.storage
-        .from("receipts")
-        .upload(filePath, file);
-      if (error) throw error;
-      const { data: urlData } = supabase.storage
-        .from("receipts")
-        .getPublicUrl(filePath);
-      return urlData.publicUrl;
-    } catch {
-      // fallback to local URL
-      return URL.createObjectURL(file);
-    }
+    if (!user) return null;
+    const filePath = `${user.id}/${Date.now()}_${file.name}`;
+    const { data, error } = await supabase.storage.from("receipts").upload(filePath, file);
+    if (error) throw error;
+    const { data: urlData } = supabase.storage.from("receipts").getPublicUrl(filePath);
+    return urlData.publicUrl;
   };
 
-  // Save to Supabase or LocalStorage
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!name && !imageFile && !otherFile) {
-      toast({
-        title: "Missing Info",
-        description: "Please add at least a name or upload a file.",
-        variant: "destructive",
-      });
+    if (!user) {
+      toast({ title: "Not signed in", description: "Please log in first.", variant: "destructive" });
       return;
     }
 
@@ -99,63 +76,32 @@ export function AddReceiptDialog({ onSuccess }: AddReceiptDialogProps) {
       const imageUrl = imageFile ? await handleUpload(imageFile) : null;
       const fileUrl = otherFile ? await handleUpload(otherFile) : null;
 
-      const newReceipt = {
-        id: crypto.randomUUID(),
-        user_id: user?.id || "guest",
+      const { error } = await supabase.from("receipts").insert({
+        user_id: user.id,
         name: name || "Untitled Receipt",
         amount: amount ? Number(amount) : 0,
         merchant: merchant || "Unknown",
         category: category || "General",
         date: date || new Date().toISOString().split("T")[0],
         image_url: imageUrl || fileUrl || null,
-      };
-
-      let savedOnline = false;
-
-      // Try Supabase first
-      try {
-        if (supabase && user) {
-          const { error } = await supabase.from("receipts").insert(newReceipt);
-          if (error) throw error;
-          savedOnline = true;
-        }
-      } catch {
-        savedOnline = false;
-      }
-
-      // Fallback: Save offline
-      if (!savedOnline) {
-        const localReceipts =
-          JSON.parse(localStorage.getItem("receipts") || "[]") || [];
-        localReceipts.push(newReceipt);
-        localStorage.setItem("receipts", JSON.stringify(localReceipts));
-      }
-
-      toast({
-        title: savedOnline ? "Receipt Added" : "Saved Locally",
-        description: savedOnline
-          ? "Your receipt has been uploaded successfully."
-          : "You’re offline — receipt saved locally.",
       });
 
-      // Reset UI
+      if (error) throw error;
+
+      toast({ title: "Receipt Added", description: "Your receipt has been saved." });
       setOpen(false);
+      onSuccess();
       setImageFile(null);
-      setImagePreview(null);
       setOtherFile(null);
+      setImagePreview(null);
       setName("");
       setAmount("");
       setMerchant("");
       setCategory("");
       setDate("");
-      onSuccess();
     } catch (err) {
       console.error(err);
-      toast({
-        title: "Error",
-        description: "Failed to save receipt.",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to add receipt.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -176,6 +122,7 @@ export function AddReceiptDialog({ onSuccess }: AddReceiptDialogProps) {
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Text Inputs */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <input
               placeholder="Name"
@@ -210,8 +157,8 @@ export function AddReceiptDialog({ onSuccess }: AddReceiptDialogProps) {
             />
           </div>
 
+          {/* File Uploads */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Image Upload */}
             <div
               onDragOver={handleDragOver}
               onDrop={(e) => handleDrop(e, "image")}
@@ -227,37 +174,23 @@ export function AddReceiptDialog({ onSuccess }: AddReceiptDialogProps) {
                 className="hidden"
               />
               {imagePreview ? (
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="w-full h-48 object-contain rounded-lg"
-                />
+                <img src={imagePreview} alt="Preview" className="w-full h-48 object-contain rounded-lg" />
               ) : (
-                <p className="text-gray-500 text-center">
-                  📷 Drag, drop, or tap to take a photo
-                </p>
+                <p className="text-gray-500 text-center">📷 Drag, drop, or tap to take a photo</p>
               )}
             </div>
 
-            {/* File Upload */}
             <div
               onDragOver={handleDragOver}
               onDrop={(e) => handleDrop(e, "file")}
               onClick={() => fileInputRef.current?.click()}
               className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-gray-500 cursor-pointer bg-gray-50"
             >
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                className="hidden"
-              />
+              <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
               {otherFile ? (
                 <p className="text-gray-700 text-center">{otherFile.name}</p>
               ) : (
-                <p className="text-gray-500 text-center">
-                  📁 Drag & drop or click to upload a file
-                </p>
+                <p className="text-gray-500 text-center">📁 Drag & drop or click to upload a file</p>
               )}
             </div>
           </div>
