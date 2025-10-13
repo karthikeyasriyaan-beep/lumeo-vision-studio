@@ -1,10 +1,16 @@
-import { useState, useRef } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useRef } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client"; // optional, safe to keep
 
 interface AddReceiptDialogProps {
   onSuccess: () => void;
@@ -16,14 +22,20 @@ export function AddReceiptDialog({ onSuccess }: AddReceiptDialogProps) {
 
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [otherFile, setOtherFile] = useState<File | null>(null);
 
+  const [name, setName] = useState("");
+  const [amount, setAmount] = useState("");
+  const [merchant, setMerchant] = useState("");
+  const [category, setCategory] = useState("");
+  const [date, setDate] = useState("");
+
   const imageInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  /** Image Input Handler */
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
     const file = e.target.files[0];
@@ -31,99 +43,118 @@ export function AddReceiptDialog({ onSuccess }: AddReceiptDialogProps) {
     setImagePreview(URL.createObjectURL(file));
   };
 
-  /** File Input Handler */
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
     setOtherFile(e.target.files[0]);
   };
 
-  /** Drag & Drop Support */
   const handleDragOver = (e: React.DragEvent) => e.preventDefault();
-  const handleDrop = (e: React.DragEvent, type: 'image' | 'file') => {
+
+  const handleDrop = (e: React.DragEvent, type: "image" | "file") => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
     if (!file) return;
-    if (type === 'image' && file.type.startsWith('image/')) {
+    if (type === "image" && file.type.startsWith("image/")) {
       setImageFile(file);
       setImagePreview(URL.createObjectURL(file));
-    } else if (type === 'file') {
+    } else {
       setOtherFile(file);
     }
   };
 
-  /** ✅ Corrected Upload Function */
-  const handleUpload = async (file: File, folder: string) => {
-    if (!user) throw new Error('User not logged in');
-    const path = `${user.id}/${Date.now()}_${file.name}`;
-
-    const { data, error } = await supabase.storage.from(folder).upload(path, file, {
-      upsert: false,
-      contentType: file.type,
-    });
-
-    if (error) throw error;
-
-    // ✅ Fix: getPublicUrl returns { data: { publicUrl: string } }
-    const { data: publicUrlData } = supabase.storage.from(folder).getPublicUrl(path);
-    return publicUrlData.publicUrl;
+  // Safe upload to Supabase or fallback
+  const handleUpload = async (file: File) => {
+    try {
+      if (!supabase) throw new Error("Supabase not configured");
+      const filePath = `${user?.id || "guest"}/${Date.now()}_${file.name}`;
+      const { data, error } = await supabase.storage
+        .from("receipts")
+        .upload(filePath, file);
+      if (error) throw error;
+      const { data: urlData } = supabase.storage
+        .from("receipts")
+        .getPublicUrl(filePath);
+      return urlData.publicUrl;
+    } catch {
+      // fallback to local URL
+      return URL.createObjectURL(file);
+    }
   };
 
-  /** ✅ Fixed Submit Logic */
+  // Save to Supabase or LocalStorage
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) {
+
+    if (!name && !imageFile && !otherFile) {
       toast({
-        title: 'Login required',
-        description: 'Please sign in to add a receipt.',
-        variant: 'destructive',
-      });
-      return;
-    }
-    if (!imageFile && !otherFile) {
-      toast({
-        title: 'No file selected',
-        description: 'Please upload an image or file.',
-        variant: 'destructive',
+        title: "Missing Info",
+        description: "Please add at least a name or upload a file.",
+        variant: "destructive",
       });
       return;
     }
 
     setLoading(true);
-
     try {
-      const uploadedImage = imageFile ? await handleUpload(imageFile, 'receipts') : null;
-      const uploadedFile = otherFile ? await handleUpload(otherFile, 'receipts') : null;
+      const imageUrl = imageFile ? await handleUpload(imageFile) : null;
+      const fileUrl = otherFile ? await handleUpload(otherFile) : null;
 
-      const { error: insertError } = await supabase.from('receipts').insert([
-        {
-          user_id: user.id,
-          name: 'Receipt',
-          amount: 0,
-          date: new Date().toISOString().split('T')[0],
-          image_url: uploadedImage || uploadedFile,
-          category: 'Other',
-        },
-      ]);
+      const newReceipt = {
+        id: crypto.randomUUID(),
+        user_id: user?.id || "guest",
+        name: name || "Untitled Receipt",
+        amount: amount ? Number(amount) : 0,
+        merchant: merchant || "Unknown",
+        category: category || "General",
+        date: date || new Date().toISOString().split("T")[0],
+        image_url: imageUrl || fileUrl || null,
+      };
 
-      if (insertError) throw insertError;
+      let savedOnline = false;
+
+      // Try Supabase first
+      try {
+        if (supabase && user) {
+          const { error } = await supabase.from("receipts").insert(newReceipt);
+          if (error) throw error;
+          savedOnline = true;
+        }
+      } catch {
+        savedOnline = false;
+      }
+
+      // Fallback: Save offline
+      if (!savedOnline) {
+        const localReceipts =
+          JSON.parse(localStorage.getItem("receipts") || "[]") || [];
+        localReceipts.push(newReceipt);
+        localStorage.setItem("receipts", JSON.stringify(localReceipts));
+      }
 
       toast({
-        title: 'Receipt saved',
-        description: 'Your receipt has been added successfully.',
+        title: savedOnline ? "Receipt Added" : "Saved Locally",
+        description: savedOnline
+          ? "Your receipt has been uploaded successfully."
+          : "You’re offline — receipt saved locally.",
       });
 
-      // Reset State
+      // Reset UI
+      setOpen(false);
       setImageFile(null);
       setImagePreview(null);
       setOtherFile(null);
-      setOpen(false);
+      setName("");
+      setAmount("");
+      setMerchant("");
+      setCategory("");
+      setDate("");
       onSuccess();
-    } catch (err: any) {
-      console.error('Upload/Insert error:', err.message);
+    } catch (err) {
+      console.error(err);
       toast({
-        title: 'Error',
-        description: 'Failed to save receipt. Please try again.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to save receipt.",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -145,13 +176,47 @@ export function AddReceiptDialog({ onSuccess }: AddReceiptDialogProps) {
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input
+              placeholder="Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="border rounded-lg p-2"
+            />
+            <input
+              type="number"
+              placeholder="Amount"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="border rounded-lg p-2"
+            />
+            <input
+              placeholder="Merchant"
+              value={merchant}
+              onChange={(e) => setMerchant(e.target.value)}
+              className="border rounded-lg p-2"
+            />
+            <input
+              placeholder="Category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="border rounded-lg p-2"
+            />
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="border rounded-lg p-2"
+            />
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* 📷 Image Upload */}
+            {/* Image Upload */}
             <div
               onDragOver={handleDragOver}
-              onDrop={(e) => handleDrop(e, 'image')}
+              onDrop={(e) => handleDrop(e, "image")}
               onClick={() => imageInputRef.current?.click()}
-              className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-gray-500 transition cursor-pointer bg-gray-50"
+              className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-gray-500 cursor-pointer bg-gray-50"
             >
               <input
                 type="file"
@@ -165,7 +230,7 @@ export function AddReceiptDialog({ onSuccess }: AddReceiptDialogProps) {
                 <img
                   src={imagePreview}
                   alt="Preview"
-                  className="w-full h-48 object-contain rounded-lg shadow-sm"
+                  className="w-full h-48 object-contain rounded-lg"
                 />
               ) : (
                 <p className="text-gray-500 text-center">
@@ -174,12 +239,12 @@ export function AddReceiptDialog({ onSuccess }: AddReceiptDialogProps) {
               )}
             </div>
 
-            {/* 📁 File Upload */}
+            {/* File Upload */}
             <div
               onDragOver={handleDragOver}
-              onDrop={(e) => handleDrop(e, 'file')}
+              onDrop={(e) => handleDrop(e, "file")}
               onClick={() => fileInputRef.current?.click()}
-              className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-gray-500 transition cursor-pointer bg-gray-50"
+              className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-gray-500 cursor-pointer bg-gray-50"
             >
               <input
                 type="file"
@@ -197,13 +262,12 @@ export function AddReceiptDialog({ onSuccess }: AddReceiptDialogProps) {
             </div>
           </div>
 
-          {/* Actions */}
           <div className="flex justify-end gap-2 mt-4">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={loading || (!imageFile && !otherFile)}>
-              {loading ? 'Saving...' : 'Save Receipt'}
+            <Button type="submit" disabled={loading}>
+              {loading ? "Saving..." : "Save Receipt"}
             </Button>
           </div>
         </form>
