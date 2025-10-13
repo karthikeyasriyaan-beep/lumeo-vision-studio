@@ -134,13 +134,22 @@ const Welcome = () => {
         </div>
 
 
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.05 }}
+          className="text-2xl md:text-3xl font-medium text-muted-foreground mb-4"
+        >
+          Welcome to Trackora
+        </motion.div>
+
         <motion.h1 
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.1 }}
           className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight max-w-5xl"
         >
-          Track smarter.{" "}
+          Track lighter.{" "}
           <span className="gradient-text">
             Live lighter.
           </span>
@@ -217,43 +226,53 @@ const Welcome = () => {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {features.map((f, i) => (
-            <motion.div
-              key={f.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1, duration: 0.5 }}
-              viewport={{ once: true }}
-            >
-              <Card className="h-full border bg-card hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="w-12 h-12 mb-4 flex items-center justify-center rounded-lg bg-muted">
-                    <f.icon className="w-6 h-6 text-primary" />
-                  </div>
-                  <CardTitle className="text-xl font-semibold">{f.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">{f.description}</p>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
+          {features.map((f, i) => {
+            const colors = [
+              "bg-blue-500/10 text-blue-500",
+              "bg-purple-500/10 text-purple-500",
+              "bg-green-500/10 text-green-500",
+              "bg-orange-500/10 text-orange-500",
+              "bg-pink-500/10 text-pink-500",
+              "bg-cyan-500/10 text-cyan-500"
+            ];
+            return (
+              <motion.div
+                key={f.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1, duration: 0.5 }}
+                viewport={{ once: true }}
+              >
+                <Card className="h-full border bg-card hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className={`w-12 h-12 mb-4 flex items-center justify-center rounded-lg ${colors[i]}`}>
+                      <f.icon className="w-6 h-6" />
+                    </div>
+                    <CardTitle className="text-xl font-semibold">{f.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground">{f.description}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            );
+          })}
         </div>
       </section>
 
       {/* Why Choose */}
       <section className="py-24 container mx-auto px-6">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold">
-            Why Choose{" "}
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Lumeo
-            </span>
-          </h2>
-          <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            Built with security, privacy, and transparency at its core — Lumeo helps you achieve your financial goals.
-          </p>
-        </div>
+      <div className="text-center mb-16">
+        <h2 className="text-4xl md:text-5xl font-bold">
+          Why Choose{" "}
+          <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            Trackora
+          </span>
+        </h2>
+        <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+          Built with security, privacy, and transparency at its core — Trackora helps you achieve your financial goals.
+        </p>
+      </div>
 
         <div className="grid md:grid-cols-2 gap-8">
           {whyChoose.map((item, i) => (
