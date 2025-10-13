@@ -1,177 +1,140 @@
-import { useState, useRef } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import React, { useState } from "react";
 
-interface AddReceiptDialogProps {
-  onSuccess: () => void;
-}
+export default function ReceiptUpload() {
+  const [imageFile, setImageFile] = useState(null);
+  const [otherFile, setOtherFile] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [message, setMessage] = useState("");
 
-export function AddReceiptDialog({ onSuccess }: AddReceiptDialogProps) {
-  const { user } = useAuth();
-  const { toast } = useToast();
-
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [otherFile, setOtherFile] = useState<File | null>(null);
-
-  const imageInputRef = useRef<HTMLInputElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
+  const handleImageChange = (e) => {
     const file = e.target.files[0];
-    setImageFile(file);
-    setImagePreview(URL.createObjectURL(file));
+    if (file) {
+      setImageFile(file);
+      setPreview(URL.createObjectURL(file));
+      setMessage("");
+    }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    setOtherFile(e.target.files[0]);
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setOtherFile(file);
+      setMessage("");
+    }
   };
 
-  const handleDragOver = (e: React.DragEvent) => e.preventDefault();
-  const handleDrop = (e: React.DragEvent, type: 'image' | 'file') => {
+  const handleDrop = (e, type) => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
-    if (!file) return;
-    if (type === 'image' && file.type.startsWith('image/')) {
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
-    } else if (type === 'file') {
-      setOtherFile(file);
+    if (file) {
+      if (type === "image") {
+        setImageFile(file);
+        setPreview(URL.createObjectURL(file));
+      } else {
+        setOtherFile(file);
+      }
+      setMessage("");
     }
   };
 
-  const handleUpload = async (file: File, folder: string) => {
-    if (!user) return null;
-    const fileName = `${user.id}/${Date.now()}_${file.name}`;
-    const { data, error } = await supabase.storage.from(folder).upload(fileName, file);
-    if (error) throw error;
-    const { data: { publicUrl } } = supabase.storage.from(folder).getPublicUrl(data.path);
-    return publicUrl;
+  const handleUpload = () => {
+    if (!imageFile && !otherFile) {
+      setMessage("Please upload a file first.");
+      return;
+    }
+    setMessage("✅ File uploaded locally (no backend connected).");
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user || (!imageFile && !otherFile)) return;
-
-    setLoading(true);
-    try {
-      const uploadedImage = imageFile ? await handleUpload(imageFile, 'receipts') : null;
-      const uploadedFile = otherFile ? await handleUpload(otherFile, 'receipts') : null;
-
-      const { error } = await supabase.from('receipts').insert({
-        user_id: user.id,
-        name: 'Receipt',
-        amount: 0,
-        date: new Date().toISOString().split('T')[0],
-        image_url: uploadedImage,
-        category: 'Other',
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: 'Receipt saved',
-        description: 'Your receipt has been added successfully.',
-      });
-
-      setImageFile(null);
-      setImagePreview(null);
-      setOtherFile(null);
-      setOpen(false);
-      onSuccess();
-    } catch (err) {
-      console.error(err);
-      toast({
-        title: 'Error',
-        description: 'Failed to save receipt. Try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
+  const handleReset = () => {
+    setImageFile(null);
+    setOtherFile(null);
+    setPreview(null);
+    setMessage("");
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          Add Receipt
-        </Button>
-      </DialogTrigger>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 text-gray-800">
+      <div className="bg-white shadow-md rounded-2xl p-6 w-full max-w-md border border-gray-200">
+        <h2 className="text-2xl font-semibold text-center mb-6">
+          Upload Receipt
+        </h2>
 
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle>Add New Receipt</DialogTitle>
-        </DialogHeader>
+        {/* Image Upload */}
+        <div
+          className="border-2 border-dashed border-gray-300 rounded-xl p-4 mb-5 text-center hover:border-blue-400 transition"
+          onDrop={(e) => handleDrop(e, "image")}
+          onDragOver={(e) => e.preventDefault()}
+        >
+          <label className="block cursor-pointer">
+            <span className="text-gray-600">
+              📷 Image Upload (or take a photo)
+            </span>
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handleImageChange}
+              className="hidden"
+            />
+          </label>
+          {preview ? (
+            <img
+              src={preview}
+              alt="Preview"
+              className="mt-3 w-full h-48 object-cover rounded-lg border"
+            />
+          ) : (
+            <p className="text-sm text-gray-400 mt-2">
+              Drag & drop or tap to upload
+            </p>
+          )}
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* File Upload */}
+        <div
+          className="border-2 border-dashed border-gray-300 rounded-xl p-4 mb-5 text-center hover:border-blue-400 transition"
+          onDrop={(e) => handleDrop(e, "file")}
+          onDragOver={(e) => e.preventDefault()}
+        >
+          <label className="block cursor-pointer">
+            <span className="text-gray-600">📎 Other File Upload</span>
+            <input
+              type="file"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+          </label>
+          {otherFile ? (
+            <p className="text-sm text-gray-600 mt-2">
+              Selected: <strong>{otherFile.name}</strong>
+            </p>
+          ) : (
+            <p className="text-sm text-gray-400 mt-2">
+              Drag & drop or tap to upload
+            </p>
+          )}
+        </div>
 
-            {/* Image Upload Card */}
-            <div
-              onDragOver={handleDragOver}
-              onDrop={(e) => handleDrop(e, 'image')}
-              onClick={() => imageInputRef.current?.click()}
-              className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-gray-500 transition cursor-pointer bg-gray-50"
-            >
-              <input
-                type="file"
-                accept="image/*"
-                capture="environment"
-                ref={imageInputRef}
-                onChange={handleImageChange}
-                className="hidden"
-              />
-              {imagePreview ? (
-                <img src={imagePreview} alt="Preview" className="w-full h-48 object-contain rounded-lg shadow-sm" />
-              ) : (
-                <p className="text-gray-500 text-center">📷 Drag, drop, or tap to take a photo</p>
-              )}
-            </div>
+        {/* Buttons */}
+        <div className="flex justify-between gap-3">
+          <button
+            onClick={handleUpload}
+            className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 rounded-lg"
+          >
+            Upload
+          </button>
+          <button
+            onClick={handleReset}
+            className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 rounded-lg"
+          >
+            Reset
+          </button>
+        </div>
 
-            {/* Other File Upload Card */}
-            <div
-              onDragOver={handleDragOver}
-              onDrop={(e) => handleDrop(e, 'file')}
-              onClick={() => fileInputRef.current?.click()}
-              className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-gray-500 transition cursor-pointer bg-gray-50"
-            >
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              {otherFile ? (
-                <p className="text-gray-700 text-center">{otherFile.name}</p>
-              ) : (
-                <p className="text-gray-500 text-center">📁 Drag & drop or click to upload a file</p>
-              )}
-            </div>
-
-          </div>
-
-          {/* Actions */}
-          <div className="flex justify-end gap-2 mt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={loading || (!imageFile && !otherFile)}>
-              {loading ? 'Saving...' : 'Save Receipt'}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+        {message && (
+          <p className="text-center text-sm mt-4 text-gray-600">{message}</p>
+        )}
+      </div>
+    </div>
   );
 }
