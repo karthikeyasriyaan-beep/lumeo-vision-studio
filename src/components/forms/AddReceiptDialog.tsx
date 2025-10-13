@@ -54,7 +54,7 @@ export function AddReceiptDialog({ onSuccess }: AddReceiptDialogProps) {
     const fileName = `${user.id}/${Date.now()}_${file.name}`;
     const { data, error } = await supabase.storage.from(folder).upload(fileName, file);
     if (error) throw error;
-    const { publicUrl } = supabase.storage.from(folder).getPublicUrl(data.path);
+    const { data: { publicUrl } } = supabase.storage.from(folder).getPublicUrl(data.path);
     return publicUrl;
   };
 
@@ -69,9 +69,10 @@ export function AddReceiptDialog({ onSuccess }: AddReceiptDialogProps) {
 
       const { error } = await supabase.from('receipts').insert({
         user_id: user.id,
+        name: 'Receipt',
+        amount: 0,
         image_url: uploadedImage,
-        file_url: uploadedFile,
-        created_at: new Date().toISOString(),
+        category: 'Other',
       });
 
       if (error) throw error;

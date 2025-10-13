@@ -58,33 +58,33 @@ const Welcome = () => {
   const features = [
     {
       icon: TrendingUp,
-      title: "Smart Analytics",
-      description: "Gain clear insights into spending patterns with real-time analytics and reports."
-    },
-    {
-      icon: Smartphone,
-      title: "Mobile First",
-      description: "Manage finances anywhere with a smooth, responsive design built for all devices."
-    },
-    {
-      icon: Receipt,
-      title: "Receipt Scanning",
-      description: "Upload or scan receipts to track expenses instantly with AI-powered recognition."
-    },
-    {
-      icon: PieChart,
-      title: "Visual Reports",
-      description: "Understand your finances with beautiful, exportable charts and dashboards."
-    },
-    {
-      icon: CreditCard,
-      title: "Complete Tracking",
-      description: "Track income, expenses, loans, debts, and subscriptions in one simple platform."
+      title: "Smart Tracking",
+      description: "Every rupee accounted for — without the effort. Sync, sort, and see your financial health at a glance."
     },
     {
       icon: BarChart3,
-      title: "Goal Progress",
-      description: "Set financial goals and measure your progress with clarity and precision."
+      title: "Intelligent Insights",
+      description: "Numbers that talk back. See patterns, not spreadsheets. Know exactly where your money moves."
+    },
+    {
+      icon: Target,
+      title: "Goals & Progress",
+      description: "Your ambitions, made measurable. Set goals, track growth, and celebrate progress — one milestone at a time."
+    },
+    {
+      icon: Receipt,
+      title: "Receipts & Records",
+      description: "Capture clarity. Snap, upload, and store your receipts neatly for instant access."
+    },
+    {
+      icon: CreditCard,
+      title: "Subscription Control",
+      description: "No more silent spenders. Track renewals and cancellations before they surprise you."
+    },
+    {
+      icon: PieChart,
+      title: "Dashboard Experience",
+      description: "Welcome back — your finances look focused today. See your progress and stay on track."
     }
   ];
 
@@ -140,9 +140,9 @@ const Welcome = () => {
           transition={{ duration: 0.7, delay: 0.1 }}
           className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight max-w-5xl"
         >
-          Welcome to{" "}
+          Track smarter.{" "}
           <span className="gradient-text">
-            Lumeo
+            Live lighter.
           </span>
         </motion.h1>
 
@@ -152,8 +152,8 @@ const Welcome = () => {
           transition={{ delay: 0.3, duration: 0.7 }}
           className="mt-8 text-lg md:text-2xl text-muted-foreground max-w-3xl leading-relaxed"
         >
-          Your intelligent financial companion. Track expenses, manage savings, and watch your wealth grow 
-          with powerful analytics and beautiful visualizations.
+          A modern finance tracker built to bring focus, not clutter.
+          Visualize your income, expenses, goals, and insights — all in one calm, intelligent space.
         </motion.p>
 
         <motion.div 
@@ -167,17 +167,17 @@ const Welcome = () => {
             size="lg"
             className="text-lg px-12 py-7 rounded-xl shadow-strong hover:shadow-medium transition-all"
           >
-            Start Free Today
+            Start Tracking
             <ArrowRight className="ml-2 w-5 h-5" />
           </Button>
 
           <Button 
             variant="outline" 
             size="lg"
-            onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+            onClick={() => navigate('/dashboard')}
             className="text-lg px-12 py-7 rounded-xl border-2 hover:bg-muted/50 transition-all"
           >
-            See How It Works
+            View My Dashboard
           </Button>
         </motion.div>
 
@@ -293,14 +293,13 @@ const Welcome = () => {
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-accent/10 -z-10" />
           
           <h2 className="text-4xl md:text-6xl font-bold mb-6">
-            Ready to Transform Your{" "}
+            Where simplicity meets{" "}
             <span className="gradient-text">
-              Financial Future?
+              smart finance
             </span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-12">
-            Take control of your financial future. Start tracking, saving, and growing your wealth 
-            with clarity and confidence.
+            Because control shouldn't come with complexity. Trackora — effortless clarity.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">

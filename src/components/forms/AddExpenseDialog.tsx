@@ -67,6 +67,7 @@ export function AddExpenseDialog({ onSuccess }: AddExpenseDialogProps) {
       const { error } = await supabase.from("expenses").insert({
         user_id: user.id,
         name: titleToUse,
+        category: titleToUse,
         amount: parseFloat(formData.amount),
         notes: formData.notes,
         date: formData.date,
