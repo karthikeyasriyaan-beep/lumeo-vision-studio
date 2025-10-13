@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { TrendingUp, TrendingDown, Filter, Search, DollarSign } from "lucide-react";
+import { TrendingUp, TrendingDown, Filter, Search, DollarSign, Pencil } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -174,7 +174,7 @@ export default function Transactions() {
                   filteredTransactions.map((transaction) => (
                     <div 
                       key={`${transaction.type}-${transaction.id}`}
-                      className="flex items-center justify-between p-4 rounded-xl border bg-card/50 hover:bg-card/80 transition-all duration-300 hover:shadow-lg cursor-pointer"
+                      className="flex items-center justify-between p-4 rounded-xl border bg-card/50 hover:bg-card/80 transition-all duration-300 hover:shadow-lg cursor-pointer group"
                       onClick={() => {
                         if (transaction.type === 'income') {
                           setSelectedIncome(transaction);
@@ -208,11 +208,14 @@ export default function Transactions() {
                           </p>
                         </div>
                       </div>
-                      <div className={`text-xl font-bold ${
-                        transaction.type === 'income' ? 'status-positive' : 'status-negative'
-                      }`}>
-                        {transaction.type === 'income' ? '+' : '-'}
-                        {formatAmount(Number(transaction.amount))}
+                      <div className="flex items-center gap-3">
+                        <div className={`text-xl font-bold ${
+                          transaction.type === 'income' ? 'status-positive' : 'status-negative'
+                        }`}>
+                          {transaction.type === 'income' ? '+' : '-'}
+                          {formatAmount(Number(transaction.amount))}
+                        </div>
+                        <Pencil className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
                     </div>
                   ))
@@ -223,7 +226,7 @@ export default function Transactions() {
                 {income.map((item) => (
                   <div 
                     key={item.id}
-                    className="flex items-center justify-between p-4 rounded-xl border bg-card/50 hover:bg-card/80 transition-all duration-300 hover:shadow-lg cursor-pointer"
+                    className="flex items-center justify-between p-4 rounded-xl border bg-card/50 hover:bg-card/80 transition-all duration-300 hover:shadow-lg cursor-pointer group"
                     onClick={() => setSelectedIncome(item)}
                   >
                     <div className="flex items-center gap-4">
@@ -240,8 +243,11 @@ export default function Transactions() {
                         </p>
                       </div>
                     </div>
-                    <div className="text-xl font-bold status-positive">
-                      +{formatAmount(Number(item.amount))}
+                    <div className="flex items-center gap-3">
+                      <div className="text-xl font-bold status-positive">
+                        +{formatAmount(Number(item.amount))}
+                      </div>
+                      <Pencil className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                   </div>
                 ))}
@@ -251,7 +257,7 @@ export default function Transactions() {
                 {expenses.map((item) => (
                   <div 
                     key={item.id}
-                    className="flex items-center justify-between p-4 rounded-xl border bg-card/50 hover:bg-card/80 transition-all duration-300 hover:shadow-lg cursor-pointer"
+                    className="flex items-center justify-between p-4 rounded-xl border bg-card/50 hover:bg-card/80 transition-all duration-300 hover:shadow-lg cursor-pointer group"
                     onClick={() => setSelectedExpense(item)}
                   >
                     <div className="flex items-center gap-4">
@@ -268,8 +274,11 @@ export default function Transactions() {
                         </p>
                       </div>
                     </div>
-                    <div className="text-xl font-bold status-negative">
-                      -{formatAmount(Number(item.amount))}
+                    <div className="flex items-center gap-3">
+                      <div className="text-xl font-bold status-negative">
+                        -{formatAmount(Number(item.amount))}
+                      </div>
+                      <Pencil className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                   </div>
                 ))}

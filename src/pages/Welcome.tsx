@@ -134,25 +134,13 @@ const Welcome = () => {
         </div>
 
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.05 }}
-          className="text-2xl md:text-3xl font-medium text-muted-foreground mb-4"
-        >
-          Welcome to Trackora
-        </motion.div>
-
         <motion.h1 
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.1 }}
           className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight max-w-5xl"
         >
-          Track lighter.{" "}
-          <span className="gradient-text">
-            Live lighter.
-          </span>
+          Welcome to Trackora
         </motion.h1>
 
         <motion.p 
@@ -213,6 +201,20 @@ const Welcome = () => {
 
       {/* Features */}
       <section id="features" className="py-24 container mx-auto px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.2 }}
+          className="text-center mb-8"
+        >
+          <h2 className="text-3xl md:text-4xl font-semibold">
+            Track lighter.{" "}
+            <span className="gradient-text">
+              Live lighter.
+            </span>
+          </h2>
+        </motion.div>
+
         <div className="text-center mb-16">
           <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted/50 text-sm font-medium">
             <Target className="w-4 h-4 text-primary" /> Features
